@@ -120,11 +120,11 @@ with tab1:
             col1.markdown(f"#### 🏠 {p['local']}")
             col1.caption(f"Descanso: {p['dias_descanso_loc']} días | Historial Goles Local: {p['media_h2h_goles_loc']}")
             
-            col2.markdown("<h3 style='text-align:center; color:#FF4B4B;'>VS</h3>", unsafe_style=True)
-            col2.markdown(f"<p style='text-align:center; color:gray;'>🌦️ {p['clima']}</p>", unsafe_style=True)
+            col2.markdown("<h3 style='text-align:center; color:#FF4B4B;'>VS</h3>", unsafe_allow_html=True)
+            col2.markdown(f"<p style='text-align:center; color:gray;'>🌦️ {p['clima']}</p>", unsafe_allow_html=True)
             
-            col3.markdown(f"<div style='text-align:right;'>#### {p['visitante']} 🚌</div>", unsafe_style=True)
-            col3.markdown(f"<div style='text-align:right;'><span style='color:gray;'>Descanso: {p['dias_descanso_vis']} días | Historial Goles Visitante: {p['media_h2h_goles_vis']}</span></div>", unsafe_style=True)
+            col3.markdown(f"<div style='text-align:right;'>#### {p['visitante']} 🚌</div>", unsafe_allow_html=True)
+            col3.markdown(f"<div style='text-align:right;'><span style='color:gray;'>Descanso: {p['dias_descanso_vis']} días | Historial Goles Visitante: {p['media_h2h_goles_vis']}</span></div>", unsafe_allow_html=True)
             
             st.write("**Probabilidades calculadas por Simulación Matemática:**")
             c_p1, c_p2, c_p3, c_p4 = st.columns(4)
@@ -133,7 +133,7 @@ with tab1:
             c_p3.metric(f"Gana {p['visitante']}", f"{round(res['prob_vis']*100, 1)}%")
             
             if res['prob_over_25'] > 0.62:
-                c_p4.markdown(f"<div style='background-color:#2ea043; padding:10px; border-radius:5px; text-align:center; color:white;'>🔥 <b>VALOR DETECTADO</b><br>Más de 2.5 Goles: {round(res['prob_over_25']*100,1)}%</div>", unsafe_style=True)
+                c_p4.markdown(f"<div style='background-color:#2ea043; padding:10px; border-radius:5px; text-align:center; color:white;'>🔥 <b>VALOR DETECTADO</b><br>Más de 2.5 Goles: {round(res['prob_over_25']*100,1)}%</div>", unsafe_allow_html=True)
             else:
                 c_p4.metric("Más de 2.5 Goles", f"{round(res['prob_over_25']*100, 1)}%")
                 
