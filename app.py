@@ -45,8 +45,8 @@ JUGADORES = [
 ]
 
 # --- MOTOR MULTI-AGENTE Y SIMULACIÓN DE MONTE CARLO ---
-def simular_partido_monte_carlo(media_local, media_visitante, clima, importancia, dias_loc, dias_vis):
-    np.random.seed(int(HOY.strftime("%Y%m%d")))
+def simular_partido_monte_carlo(media_local, media_visitante, clima, importancia, dias_loc, dias_vis, seed_val):
+    np.random.seed(seed_val)
     
     lambda_loc_base = media_local * 1.15
     lambda_vis_base = media_visitante * 0.90
@@ -73,28 +73,35 @@ def simular_partido_monte_carlo(media_local, media_visitante, clima, importancia
         "prob_over_25": prob_over_25
     }
 
+# --- CALENDARIO REALISTA DE PARTIDOS CON FECHA Y HORA (ENTORNO 2026) ---
 def obtener_partidos_jornada(liga):
-    equipos = {
-        "Premier League": ["Man City", "Arsenal", "Liverpool", "Aston Villa", "Chelsea", "Man United"],
-        "LaLiga": ["Real Madrid", "Barcelona", "Atlético Madrid", "Girona", "Real Sociedad", "Athletic Club"],
-        "Serie A": ["Inter", "Juventus", "Milan", "Atalanta", "Roma", "Lazio"],
-        "Bundesliga": ["Bayern Munich", "Bayer Leverkusen", "Dortmund", "RB Leipzig", "Eintracht", "Stuttgart"],
-        "Mundial FIFA": ["Argentina", "Francia", "Brasil", "España", "Inglaterra", "Alemania"]
-    }[liga]
-    
-    partidos = []
-    for i in range(0, len(equipos), 2):
-        partidos.append({
-            "local": equipos[i], "visitante": equipos[i+1],
-            "media_h2h_goles_loc": round(np.random.uniform(1.4, 2.8), 2),
-            "media_h2h_goles_vis": round(np.random.uniform(0.9, 1.9), 2),
-            "clima": np.random.choice(["Despejado", "Tormenta/Lluvia", "Nublado"]),
-            "importancia": np.random.choice(["Máxima (Derbi/Título)", "Regular"]),
-            "dias_descanso_loc": np.random.choice([3, 4, 7]),
-            "dias_descanso_vis": np.random.choice([3, 4, 7]),
-            "arbitro_tarjetas_promedio": round(np.random.uniform(3.1, 5.8), 1)
-        })
-    return partidos
+    # Base de datos fija para evitar emparejamientos aleatorios irreales
+    calendarios = {
+        "Mundial FIFA": [
+            {"local": "Argentina", "visitante": "Francia", "fecha_hora": "Viernes, 03 de Julio de 2026 | ⏰ 18:00 (Cuartos de Final)", "media_h2h_goles_loc": 2.1, "media_h2h_goles_vis": 1.9, "clima": "Despejado", "importancia": "Máxima (Eliminatoria Directa)", "dias_descanso_loc": 5, "dias_descanso_vis": 4, "arbitro": "Szymon Marciniak", "arbitro_tarjetas_promedio": 4.8, "seed": 101},
+            {"local": "Brasil", "visitante": "España", "fecha_hora": "Viernes, 03 de Julio de 2026 | ⏰ 21:00 (Cuartos de Final)", "media_h2h_goles_loc": 1.8, "media_h2h_goles_vis": 2.2, "clima": "Nublado", "importancia": "Máxima (Eliminatoria Directa)", "dias_descanso_loc": 4, "dias_descanso_vis": 5, "arbitro": "Anthony Taylor", "arbitro_tarjetas_promedio": 3.9, "seed": 102},
+            {"local": "Inglaterra", "visitante": "Alemania", "fecha_hora": "Sábado, 04 de Julio de 2026 | ⏰ 19:00 (Cuartos de Final)", "media_h2h_goles_loc": 1.5, "media_h2h_goles_vis": 1.7, "clima": "Tormenta/Lluvia", "importancia": "Máxima (Eliminatoria Directa)", "dias_descanso_loc": 4, "dias_descanso_vis": 4, "arbitro": "Daniele Orsato", "arbitro_tarjetas_promedio": 5.2, "seed": 103}
+        ],
+        "LaLiga": [
+            {"local": "Real Madrid", "visitante": "Barcelona", "fecha_hora": "Sábado, 15 de Agosto de 2026 | ⏰ 21:00 (Jornada 1)", "media_h2h_goles_loc": 2.4, "media_h2h_goles_vis": 1.8, "clima": "Despejado", "importancia": "Máxima (Derbi/Título)", "dias_descanso_loc": 7, "dias_descanso_vis": 7, "arbitro": "Gil Manzano", "arbitro_tarjetas_promedio": 5.4, "seed": 201},
+            {"local": "Atlético Madrid", "visitante": "Girona", "fecha_hora": "Domingo, 16 de Agosto de 2026 | ⏰ 19:00 (Jornada 1)", "media_h2h_goles_loc": 1.9, "media_h2h_goles_vis": 1.5, "clima": "Despejado", "importancia": "Regular", "dias_descanso_loc": 7, "dias_descanso_vis": 7, "arbitro": "Munuera Montero", "arbitro_tarjetas_promedio": 4.2, "seed": 202},
+            {"local": "Real Sociedad", "visitante": "Athletic Club", "fecha_hora": "Domingo, 16 de Agosto de 2026 | ⏰ 21:30 (Jornada 1)", "media_h2h_goles_loc": 1.2, "media_h2h_goles_vis": 1.1, "clima": "Nublado", "importancia": "Máxima (Derbi/Título)", "dias_descanso_loc": 7, "dias_descanso_vis": 7, "arbitro": "Alberola Rojas", "arbitro_tarjetas_promedio": 3.5, "seed": 203}
+        ],
+        "Premier League": [
+            {"local": "Man City", "visitante": "Arsenal", "fecha_hora": "Sábado, 08 de Agosto de 2026 | ⏰ 13:30 (Jornada 1)", "media_h2h_goles_loc": 2.2, "media_h2h_goles_vis": 1.6, "clima": "Nublado", "importancia": "Máxima (Derbi/Título)", "dias_descanso_loc": 7, "dias_descanso_vis": 7, "arbitro": "Michael Oliver", "arbitro_tarjetas_promedio": 3.8, "seed": 301},
+            {"local": "Liverpool", "visitante": "Chelsea", "fecha_hora": "Sábado, 08 de Agosto de 2026 | ⏰ 16:00 (Jornada 1)", "media_h2h_goles_loc": 2.0, "media_h2h_goles_vis": 1.4, "clima": "Tormenta/Lluvia", "importancia": "Regular", "dias_descanso_loc": 7, "dias_descanso_vis": 7, "arbitro": "Paul Tierney", "arbitro_tarjetas_promedio": 4.1, "seed": 302},
+            {"local": "Aston Villa", "visitante": "Man United", "fecha_hora": "Domingo, 09 de Agosto de 2026 | ⏰ 17:00 (Jornada 1)", "media_h2h_goles_loc": 1.6, "media_h2h_goles_vis": 1.5, "clima": "Despejado", "importancia": "Regular", "dias_descanso_loc": 7, "dias_descanso_vis": 7, "arbitro": "Simon Hooper", "arbitro_tarjetas_promedio": 4.5, "seed": 303}
+        ],
+        "Serie A": [
+            {"local": "Inter", "visitante": "Juventus", "fecha_hora": "Sábado, 22 de Agosto de 2026 | ⏰ 20:45 (Jornada 1)", "media_h2h_goles_loc": 1.7, "media_h2h_goles_vis": 1.2, "clima": "Despejado", "importancia": "Máxima (Derbi/Título)", "dias_descanso_loc": 7, "dias_descanso_vis": 7, "arbitro": "Davide Massa", "arbitro_tarjetas_promedio": 4.9, "seed": 401},
+            {"local": "Milan", "visitante": "Atalanta", "fecha_hora": "Domingo, 23 de Agosto de 2026 | ⏰ 18:00 (Jornada 1)", "media_h2h_goles_loc": 1.8, "media_h2h_goles_vis": 1.7, "clima": "Nublado", "importancia": "Regular", "dias_descanso_loc": 7, "dias_descanso_vis": 7, "arbitro": "Maurizio Mariani", "arbitro_tarjetas_promedio": 5.1, "seed": 402}
+        ],
+        "Bundesliga": [
+            {"local": "Bayern Munich", "visitante": "Bayer Leverkusen", "fecha_hora": "Viernes, 28 de Agosto de 2026 | ⏰ 20:30 (Jornada 1)", "media_h2h_goles_loc": 2.5, "media_h2h_goles_vis": 2.1, "clima": "Despejado", "importancia": "Máxima (Derbi/Título)", "dias_descanso_loc": 7, "dias_descanso_vis": 7, "arbitro": "Felix Zwayer", "arbitro_tarjetas_promedio": 4.0, "seed": 501},
+            {"local": "Dortmund", "visitante": "RB Leipzig", "fecha_hora": "Sábado, 29 de Agosto de 2026 | ⏰ 15:30 (Jornada 1)", "media_h2h_goles_loc": 2.1, "media_h2h_goles_vis": 1.9, "clima": "Nublado", "importancia": "Regular", "dias_descanso_loc": 7, "dias_descanso_vis": 7, "arbitro": "Daniel Siebert", "arbitro_tarjetas_promedio": 4.4, "seed": 502}
+        ]
+    }
+    return calendarios.get(liga, calendarios["Mundial FIFA"])
 
 # --- RENDERIZADO INTERFAZ STREAMLIT ---
 st.title("🦅 AI Ultra-Predictor Multi-Agente v2026")
@@ -109,23 +116,31 @@ for k, v in pesos.items():
 tab1, tab2, tab3 = st.tabs(["🔮 Simulación de Partidos (Monte Carlo)", "🚨 Micro-Retrasos de Jugadores", "📉 Curva de Aprendizaje Continuo"])
 
 with tab1:
-    liga_sel = st.selectbox("Competición:", ["Premier League", "LaLiga", "Serie A", "Bundesliga", "Mundial FIFA"])
+    liga_sel = st.selectbox("Competición:", ["Mundial FIFA", "LaLiga", "Premier League", "Serie A", "Bundesliga"])
     lista_partidos = obtener_partidos_jornada(liga_sel)
     
     for p in lista_partidos:
-        res = simular_partido_monte_carlo(p["media_h2h_goles_loc"], p["media_h2h_goles_vis"], p["clima"], p["importancia"], p["dias_descanso_loc"], p["dias_descanso_vis"])
+        res = simular_partido_monte_carlo(p["media_h2h_goles_loc"], p["media_h2h_goles_vis"], p["clima"], p["importancia"], p["dias_descanso_loc"], p["dias_descanso_vis"], p["seed"])
         
         with st.container(border=True):
+            # Barra horizontal con la Fecha y Hora del Evento centrada
+            st.markdown(f"<div style='background-color:#1e293b; padding:6px; border-radius:5px; text-align:center; color:#f8fafc; font-weight:bold; font-size:14px; margin-bottom:15px;'>📅 {p['fecha_hora']}</div>", unsafe_allow_html=True)
+            
             col1, col2, col3 = st.columns([2, 1, 2])
-            col1.markdown(f"#### 🏠 {p['local']}")
-            col1.caption(f"Descanso: {p['dias_descanso_loc']} días | Historial Goles Local: {p['media_h2h_goles_loc']}")
             
-            col2.markdown("<h3 style='text-align:center; color:#FF4B4B;'>VS</h3>", unsafe_allow_html=True)
-            col2.markdown(f"<p style='text-align:center; color:gray;'>🌦️ {p['clima']}</p>", unsafe_allow_html=True)
+            # Columna Local
+            col1.markdown(f"### 🏠 {p['local']}")
+            col1.caption(f"Descanso: {p['dias_descanso_loc']} días | Historial Goles: {p['media_h2h_goles_loc']}")
             
-            col3.markdown(f"<div style='text-align:right;'>#### {p['visitante']} 🚌</div>", unsafe_allow_html=True)
-            col3.markdown(f"<div style='text-align:right;'><span style='color:gray;'>Descanso: {p['dias_descanso_vis']} días | Historial Goles Visitante: {p['media_h2h_goles_vis']}</span></div>", unsafe_allow_html=True)
+            # Columna Central (VS)
+            col2.markdown("<h3 style='text-align:center; color:#FF4B4B; margin-top:0px;'>VS</h3>", unsafe_allow_html=True)
+            col2.markdown(f"<p style='text-align:center; color:gray; font-size:14px;'>🌦️ {p['clima']}</p>", unsafe_allow_html=True)
             
+            # Columna Visitante (Formato HTML limpio para alineación derecha)
+            col3.markdown(f"<h3 style='text-align:right;'>{p['visitante']} 🚌</h3>", unsafe_allow_html=True)
+            col3.markdown(f"<div style='text-align:right; color:gray; font-size:14px;'>Descanso: {p['dias_descanso_vis']} días | Historial Goles: {p['media_h2h_goles_vis']}</div>", unsafe_allow_html=True)
+            
+            st.markdown("<br>", unsafe_allow_html=True)
             st.write("**Probabilidades calculadas por Simulación Matemática:**")
             c_p1, c_p2, c_p3, c_p4 = st.columns(4)
             c_p1.metric(f"Gana {p['local']}", f"{round(res['prob_loc']*100, 1)}%")
@@ -133,11 +148,11 @@ with tab1:
             c_p3.metric(f"Gana {p['visitante']}", f"{round(res['prob_vis']*100, 1)}%")
             
             if res['prob_over_25'] > 0.62:
-                c_p4.markdown(f"<div style='background-color:#2ea043; padding:10px; border-radius:5px; text-align:center; color:white;'>🔥 <b>VALOR DETECTADO</b><br>Más de 2.5 Goles: {round(res['prob_over_25']*100,1)}%</div>", unsafe_allow_html=True)
+                c_p4.markdown(f"<div style='background-color:#2ea043; padding:10px; border-radius:5px; text-align:center; color:white; font-weight:bold;'>🔥 VALOR DETECTADO<br>Más de 2.5 Goles: {round(res['prob_over_25']*100,1)}%</div>", unsafe_allow_html=True)
             else:
                 c_p4.metric("Más de 2.5 Goles", f"{round(res['prob_over_25']*100, 1)}%")
                 
-            st.info(f"📋 **Explicación del Comité IA:** El Agente de Contexto detecta importancia '{p['importancia']}'. El Arbitro promedia {p['arbitro_tarjetas_promedio']} tarjetas, condicionando el juego rudo.")
+            st.info(f"📋 **Explicación del Comité IA:** El Agente de Contexto analiza la importancia '{p['importancia']}'. Arbitraje a cargo de **{p['arbitro']}** (Promedio histórico: {p['arbitro_tarjetas_promedio']} tarjetas por partido).")
 
 with tab2:
     st.write("### 🔥 Regresión Inminente a la Media - Estadísticas de Jugadores")
