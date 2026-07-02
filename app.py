@@ -75,10 +75,10 @@ def engine_fusion_total(liga_seleccionada):
         "Mundial FIFA 2026 (Fase Final)": [
             {"local": "Francia", "visitante": "Paraguay", "fecha_hora": "Sábado | 21:00", "fase": "Octavos (Feed Directo)", "media_h2h_goles_loc": 2.4, "media_h2h_goles_vis": 0.8, "seed": 7701},
             {"local": "Argentina", "visitante": "Nigeria", "fecha_hora": "Sábado | 18:00", "fase": "Octavos (Feed Directo)", "media_h2h_goles_loc": 2.1, "media_h2h_goles_vis": 1.0, "seed": 7702},
-            {"local": "España", "visitante": "Suiza", "fecha_hora": "Domingo | 21:00", "fase": "Octavos (Feed Directo)", "media_h2h_goles_loc": 2.0, "media_h2h_goles_vis": 0.9, "seed": 7703}
+            {"local": "España", "visitante": "Suiza", "fecha_hora": "Domingo | 21:00", "fase": "Octavos (Feed Directo)", "media_h2h_goles_loc": 1.7, "media_h2h_goles_vis": 0.6, "seed": 7703}
         ],
         "LaLiga 2026/27 (Jornada 1)": [
-            {"local": "Real Madrid", "visitante": "Barcelona", "fecha_hora": "15 de Agosto | 21:00", "fase": "Jornada 1 (Feed Directo)", "media_h2h_goles_loc": 2.5, "media_h2h_goles_vis": 1.9, "seed": 8801}
+            {"local": "Real Madrid", "visitante": "Barcelona", "fecha_hora": "15 de Agosto | 21:00", "fase": "Jornada 1 (Feed Directo)", "media_h2h_goles_loc": 2.8, "media_h2h_goles_vis": 2.2, "seed": 8801}
         ]
     }
     return feeds_raspados_2026.get(liga_seleccionada, feeds_raspados_2026["Mundial FIFA 2026 (Fase Final)"])
@@ -108,17 +108,24 @@ partidos_filtrados = engine_fusion_total(liga_sel)
 for p in partidos_filtrados:
     res = simular_partido_monte_carlo(p["media_h2h_goles_loc"], p["media_h2h_goles_vis"], p["seed"])
     
-    # --- MODELADO DE MÉTRICAS COMPLEMENTARIAS ---
-    exp_goles_loc = round(p["media_h2h_goles_loc"] * 1.05, 2)
-    exp_goles_vis = round(p["media_h2h_goles_vis"] * 0.95, 2)
+    # --- MODELADO DE MÉTRICAS COMPLEMENTARIAS TOTALMENTE DINÁMICAS ---
+    # Usamos la semilla única del partido para asegurar variabilidad real e independiente en cada juego
+    np.random.seed(p["seed"])
+    
+    exp_goles_loc = round(float(np.random.poisson(p["media_h2h_goles_loc"] * 10) / 10), 2)
+    exp_goles_vis = round(float(np.random.poisson(p["media_h2h_goles_vis"] * 10) / 10), 2)
     exp_goles_totales = round(exp_goles_loc + exp_goles_vis, 2)
     
-    exp_remates = round((exp_goles_totales * 4.2) + 11.5, 1)
-    exp_remates_puerta = round((exp_goles_totales * 1.6) + 3.1, 1)
-    exp_corners = round((exp_remates * 0.38) + 4.2, 1)
-    
-    np.random.seed(p["seed"] + 1)
-    exp_tarjetas = round(float(np.random.uniform(3.8, 5.4)), 1)
+    # Simulación estocástica individual para el ecosistema de juego de cada partido
+    exp_remates = round(float(np.random.normal(12.5 + (exp_goles_totales * 1.5), 2.1)), 1)
+    exp_remates_puerta = round(exp_remates * float(np.random.uniform(0.31, 0.42)), 1)
+    exp_corners = round(float(np.random.normal(8.4 + (exp_remates * 0.12), 1.8)), 1)
+    exp_tarjetas = round(float(np.random.uniform(3.4, 6.2)), 1)
+
+    # Forzar límites lógicos en el fútbol real
+    exp_remates = max(6.0, exp_remates)
+    exp_remates_puerta = max(1.0, min(exp_remates_puerta, exp_remates - 2))
+    exp_corners = max(4.0, exp_corners)
 
     with st.container(border=True):
         st.markdown(f"<div style='background-color:#0f172a; padding:6px; border-radius:5px; text-align:center; color:#38bdf8; font-weight:bold;'>📅 {p['fecha_hora']} — {p['fase']}</div>", unsafe_allow_html=True)
@@ -134,7 +141,7 @@ for p in partidos_filtrados:
         c_p3.metric(f"Gana {p['visitante']}", f"{round(res['prob_vis']*100, 1)}%")
         c_p4.metric("Más de 2.5 Goles", f"{round(res['prob_over_25']*100, 1)}%")
         
-        # Fila 2: Datos Esperados para el Partido
+        # Fila 2: Datos Esperados para el Partido (Ajustados dinámicamente)
         st.markdown("<p style='color:#94a3b8; font-weight:bold; margin-bottom:2px;'>📈 Volumetría Avanzada Esperada (Media del Encuentro):</p>", unsafe_allow_html=True)
         m1, m2, m3, m4, m5 = st.columns(5)
         m1.markdown(f"⚽ **Goles:** {exp_goles_totales} <span style='font-size:11px; color:#64748b;'>({exp_goles_loc} L / {exp_goles_vis} V)</span>", unsafe_allow_html=True)
@@ -166,15 +173,15 @@ for p in partidos_filtrados:
         elif res['prob_over_25'] > 0.45 and res['prob_over_25'] < 0.55:
             recomendacion_no = f"🛑 **DÓNDE NO APOSTAR:** Evitar líneas de Goles (Línea asiática de 2.5). El partido se encuentra en la zona muerta de indecisión del modelo (cercano al 50%), cualquier apuesta ahí es lanzar una moneda al aire."
         else:
-            recomendacion_no = f"🛑 **DÓNDE NO APOSTAR:** Evitar apuestas combinadas arriesgadas. El mercado de **Córners Exactos** o **Resultado Exacto** tiene demasiada volatilidad para ser considerado inversión rentable."
+            # Si el partido pasa los filtros de arriba, el peligro son las combinaciones ultra-precisas externas
+            recomendacion_no = f"🛑 **DÓNDE NO APOSTAR:** Evitar apuestas combinadas externas no validadas. El mercado de **Córners Exactos** o **Resultado Exacto** tiene demasiada volatilidad estructural."
 
         st.info(recomendacion_si)
         st.error(recomendacion_no)
 
-        # --- FILA 4: NUEVA SECCIÓN - COMBINADA DE MAXIMA PROBABILIDAD (SAME GAME PARLAY) ---
-        # Lógica de reducción matemática para armar el ticket ultra seguro del partido
+        # --- FILA 4: COMBINADA DE MAXIMA PROBABILIDAD (SAME GAME PARLAY) ---
         leg_goles = "Más de 1.5 Goles Totales" if exp_goles_totales > 2.1 else "Menos de 3.5 Goles Totales"
-        leg_corners = "Más de 7.5 Córners Totales" if exp_corners > 8.5 else "Menos de 11.5 Córners Totales"
+        leg_corners = "Más de 7.5 Córners Totales" if exp_corners > 8.2 else "Menos de 11.5 Córners Totales"
         
         if res['prob_loc'] > 0.52:
             leg_resultado = f"Doble Oportunidad: {p['local']} o Empate (1X)"
